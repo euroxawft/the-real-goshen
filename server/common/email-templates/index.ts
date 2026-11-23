@@ -1,4 +1,5 @@
 import { formatNaira } from '@/server/common/utils/format';
+import { escapeHtml } from '@/server/common/utils/escape';
 import { env } from '@/server/common/utils/env';
 
 const LOGO_PATH = '/trg-logo-600.jpg';
@@ -57,14 +58,14 @@ function itemList(data: EmailData): string {
     const preorderTag = item.availability === 'preorder'
       ? `<br><span style="font-size:12px;color:#8a6236">Preorder${item.leadTimeText ? ` &middot; arrives ${item.leadTimeText}` : ''}</span>`
       : '';
-    return `<tr><td style="padding:10px 0;border-bottom:1px solid #f0ece5">${thumb}${item.productName} &times; ${item.quantity}${preorderTag}</td><td style="padding:10px 0;border-bottom:1px solid #f0ece5;text-align:right;white-space:nowrap">${price}</td></tr>`;
+    return `<tr><td style="padding:10px 0;border-bottom:1px solid #f0ece5">${thumb}${escapeHtml(item.productName ?? '')} &times; ${item.quantity}${preorderTag}</td><td style="padding:10px 0;border-bottom:1px solid #f0ece5;text-align:right;white-space:nowrap">${price}</td></tr>`;
   }).join('');
 }
 
 export function interestCustomerConfirmation(data: EmailData) {
   return {
     subject: `We received your interests \u00b7 ${data.reference}`,
-    html: layout('Interest received', `<p style="color:#3d3833;line-height:1.6">Hi ${data.customerName},</p><p style="color:#3d3833;line-height:1.6">We received your picks. Your reference is <strong style="color:#8a6236">${data.reference}</strong>.</p><table width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0">${itemList(data)}</table><p style="margin:16px 0;color:#3d3833">Estimated total: <strong style="font-size:18px;color:#8a6236">${formatNaira(data.totalEstimate ?? 0)}</strong></p>${data.leadTimeText ? `<p style="color:#6f655b;font-size:14px;line-height:1.5">Preorder pieces usually arrive ${data.leadTimeText} after confirmation.</p>` : ''}${data.preorderNote ? `<p style="color:#6f655b;font-size:14px;line-height:1.5">${data.preorderNote}</p>` : ''}`),
+    html: layout('Interest received', `<p style="color:#3d3833;line-height:1.6">Hi ${escapeHtml(data.customerName ?? '')},</p><p style="color:#3d3833;line-height:1.6">We received your picks. Your reference is <strong style="color:#8a6236">${escapeHtml(data.reference ?? '')}</strong>.</p><table width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0">${itemList(data)}</table><p style="margin:16px 0;color:#3d3833">Estimated total: <strong style="font-size:18px;color:#8a6236">${formatNaira(data.totalEstimate ?? 0)}</strong></p>${data.leadTimeText ? `<p style="color:#6f655b;font-size:14px;line-height:1.5">Preorder pieces usually arrive ${escapeHtml(data.leadTimeText)} after confirmation.</p>` : ''}${data.preorderNote ? `<p style="color:#6f655b;font-size:14px;line-height:1.5">${escapeHtml(data.preorderNote)}</p>` : ''}`),
     text: `We received your interests. Reference ${data.reference}.`,
   };
 }
@@ -72,7 +73,7 @@ export function interestCustomerConfirmation(data: EmailData) {
 export function interestAdminNotification(data: EmailData) {
   return {
     subject: `New interest \u00b7 ${data.reference}`,
-    html: layout('New customer interest', `<p style="color:#3d3833;line-height:1.6">${data.customerName} submitted an interest.</p><p style="color:#6f655b;font-size:14px">${data.reference} \u00b7 ${data.customerName} \u00b7 ${data.totalEstimate ? formatNaira(data.totalEstimate) : ''}</p><table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0">${itemList(data)}</table><p style="color:#3d3833">Estimated total: <strong>${formatNaira(data.totalEstimate ?? 0)}</strong></p>`),
+    html: layout('New customer interest', `<p style="color:#3d3833;line-height:1.6">${escapeHtml(data.customerName ?? '')} submitted an interest.</p><p style="color:#6f655b;font-size:14px">${escapeHtml(data.reference ?? '')} \u00b7 ${escapeHtml(data.customerName ?? '')} \u00b7 ${data.totalEstimate ? formatNaira(data.totalEstimate) : ''}</p><table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0">${itemList(data)}</table><p style="color:#3d3833">Estimated total: <strong>${formatNaira(data.totalEstimate ?? 0)}</strong></p>`),
     text: `New interest ${data.reference} from ${data.customerName}.`,
   };
 }
@@ -80,7 +81,7 @@ export function interestAdminNotification(data: EmailData) {
 export function interestReminder(data: EmailData) {
   return {
     subject: `A quick follow-up from TrG_studio \u00b7 ${data.reference}`,
-    html: layout('A quick follow-up', `<p style="color:#3d3833;line-height:1.6">Hi ${data.customerName}, we wanted to check in about your interest <strong style="color:#8a6236">${data.reference}</strong>.</p>${data.message ? `<p style="color:#3d3833;line-height:1.6">${data.message}</p>` : ''}<p style="color:#3d3833;line-height:1.6">Reply to this email or reach us on WhatsApp: ${data.whatsappNumber}</p>`),
+    html: layout('A quick follow-up', `<p style="color:#3d3833;line-height:1.6">Hi ${escapeHtml(data.customerName ?? '')}, we wanted to check in about your interest <strong style="color:#8a6236">${escapeHtml(data.reference ?? '')}</strong>.</p>${data.message ? `<p style="color:#3d3833;line-height:1.6">${escapeHtml(data.message)}</p>` : ''}<p style="color:#3d3833;line-height:1.6">Reply to this email or reach us on WhatsApp: ${escapeHtml(data.whatsappNumber ?? '')}</p>`),
     text: `Follow-up for ${data.reference}.`,
   };
 }
@@ -88,7 +89,7 @@ export function interestReminder(data: EmailData) {
 export function contactAutoReply(data: EmailData) {
   return {
     subject: 'We received your message \u00b7 TrG_studio',
-    html: layout('Message received', `<p style="color:#3d3833;line-height:1.6">Hi ${data.name},</p><p style="color:#3d3833;line-height:1.6">${data.message ?? 'Thank you for reaching out. We usually reply within 24 hours.'}</p>`),
+    html: layout('Message received', `<p style="color:#3d3833;line-height:1.6">Hi ${escapeHtml(data.name ?? '')},</p><p style="color:#3d3833;line-height:1.6">${escapeHtml(data.message ?? 'Thank you for reaching out. We usually reply within 24 hours.')}</p>`),
     text: 'We received your message and will reply within 24 hours.',
   };
 }
@@ -96,7 +97,7 @@ export function contactAutoReply(data: EmailData) {
 export function contactAdminNotification(data: EmailData) {
   return {
     subject: `New contact message from ${data.name}`,
-    html: layout('New message', `<p style="color:#3d3833;line-height:1.6"><strong>${data.name}</strong></p><p style="color:#3d3833;line-height:1.6">${data.message}</p>`),
+    html: layout('New message', `<p style="color:#3d3833;line-height:1.6"><strong>${escapeHtml(data.name ?? '')}</strong></p><p style="color:#3d3833;line-height:1.6">${escapeHtml(data.message ?? '')}</p>`),
     text: `New message from ${data.name}: ${data.message}`,
   };
 }
@@ -104,7 +105,7 @@ export function contactAdminNotification(data: EmailData) {
 export function contactReplyToCustomer(data: EmailData) {
   return {
     subject: 'Reply from TrG_studio',
-    html: layout('A reply from TrG_studio', `<p style="color:#3d3833;line-height:1.6">Hi ${data.name},</p><p style="color:#3d3833;line-height:1.6">${data.message}</p>`),
+    html: layout('A reply from TrG_studio', `<p style="color:#3d3833;line-height:1.6">Hi ${escapeHtml(data.name ?? '')},</p><p style="color:#3d3833;line-height:1.6">${escapeHtml(data.message ?? '')}</p>`),
     text: data.message ?? '',
   };
 }

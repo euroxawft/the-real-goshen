@@ -16,7 +16,7 @@ export class ResendProvider implements EmailProvider {
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        from: `${payload.fromName ?? env.EMAIL_FROM_NAME} <${env.EMAIL_FROM_ADDRESS}>`,
+        from: `${payload.fromName ?? env.RESEND_FROM_NAME} <${env.RESEND_FROM_EMAIL}>`,
         to: Array.isArray(payload.to) ? payload.to : [payload.to],
         subject: payload.subject,
         html: payload.html,

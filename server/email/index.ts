@@ -3,23 +3,22 @@ import { BrevoProvider } from './brevo.provider';
 import { ResendProvider } from './resend.provider';
 import type { EmailPayload, EmailProvider, EmailSendResult } from './email.types';
 
-const providers: Record<'brevo' | 'resend', EmailProvider> = {
+const providers = {
   brevo: new BrevoProvider(),
   resend: new ResendProvider(),
 };
 
-function orderedProviders(): EmailProvider[] {
-  const primary = env.EMAIL_PROVIDER;
-  const secondary = primary === 'brevo' ? 'resend' : 'brevo';
-  return [providers[primary], providers[secondary]].filter((provider) => provider.isConfigured());
-}
+// Brevo is always the primary sender; Resend is the fallback when Brevo errors.
+const orderedProviders: EmailProvider[] = [
+  ...(env.BREVO_API_KEY ? [providers.brevo] : []),
+  ...(env.RESEND_API_KEY ? [providers.resend] : []),
+];
 
 export async function sendEmail(payload: EmailPayload): Promise<EmailSendResult> {
-  const chain = orderedProviders();
-  if (chain.length === 0) throw new Error('No email provider is configured');
+  if (orderedProviders.length === 0) throw new Error('No email provider is configured');
 
   const errors: string[] = [];
-  for (const provider of chain) {
+  for (const provider of orderedProviders) {
     try {
       return await provider.send(payload);
     } catch (error) {

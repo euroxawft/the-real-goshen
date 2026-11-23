@@ -109,3 +109,15 @@ export function contactReplyToCustomer(data: EmailData) {
     text: data.message ?? '',
   };
 }
+
+export function adminWelcomeEmail(data: { name: string; email: string; password?: string; loginUrl: string }) {
+  const passwordLine = data.password
+    ? `<p style="color:#3d3833;line-height:1.6">Your temporary password is <strong style="color:#8a6236">${escapeHtml(data.password)}</strong>. Please sign in and change it from Account settings.</p>`
+    : '';
+  const passwordText = data.password ? `\nPassword: ${data.password}\nPlease change it after your first sign-in.` : '';
+  return {
+    subject: 'Your TrG_studio admin account is ready',
+    html: layout('Welcome aboard', `<p style="color:#3d3833;line-height:1.6">Hi ${escapeHtml(data.name)},</p><p style="color:#3d3833;line-height:1.6">Your admin account for TrG_studio has been created. Here are your login details:</p><p style="color:#3d3833;line-height:1.6"><strong>Email:</strong> ${escapeHtml(data.email)}</p>${passwordLine}<p style="margin:24px 0"><a href="${escapeHtml(data.loginUrl)}" style="background:#0f0d0b;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold">Sign in to your dashboard</a></p><p style="color:#6f655b;font-size:13px;line-height:1.5">If the button does not work, copy this link into your browser: ${escapeHtml(data.loginUrl)}</p>`),
+    text: `Welcome ${data.name}. Your admin account is ready.\nEmail: ${data.email}${passwordText}\nSign in: ${data.loginUrl}`,
+  };
+}

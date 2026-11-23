@@ -4,154 +4,148 @@ import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AdminLayout } from '@/components/admin/admin-layout';
-import { getAdminProduct, createProduct, updateProduct } from '@/lib/api/products';
-import { listAllCategories } from '@/lib/api/categories';
-import { uploadImage } from '@/lib/api/account';
+import { ProductFormModal, EditProductImagesModal, emptyProductForm } from '@/components/admin/product-form-modal';
+import { getAdminProduct, publishProduct, deleteProduct, type AdminProduct } from '@/lib/api/products';
+import { formatNaira } from '@/lib/format';
 import { toast } from 'sonner';
 import { ApiError } from '@/lib/api/client';
-import { useState, useRef } from 'react';
-import { Upload, X } from 'lucide-react';
+import { useState } from 'react';
 import Image from 'next/image';
 
-export default function ProductForm() {
+export default function ProductDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const id = params.id as string | undefined;
-  const isNew = !id || id === 'new';
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const id = params.id as string;
+  const [editOpen, setEditOpen] = useState(false);
+  const [imagesOpen, setImagesOpen] = useState(false);
 
-  const [form, setForm] = useState<Record<string, any>>({
-    name: '', description: '', price: 0, categoryId: '', availability: 'preorder',
-    leadTimeWeeksMin: 4, leadTimeWeeksMax: 8, stockStatus: 'in_stock', isPublished: false, isFeatured: false,
-    imageKeys: [] as string[],
-  });
-  const [loaded, setLoaded] = useState(false);
-
-  const { data: product } = useQuery({
+  const { data: product, isLoading } = useQuery({
     queryKey: ['admin-product', id],
-    queryFn: () => getAdminProduct(id!),
-    enabled: !isNew,
+    queryFn: () => getAdminProduct(id),
     retry: false,
   });
 
-  const { data: cats } = useQuery({ queryKey: ['all-categories'], queryFn: listAllCategories, retry: false });
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['admin-product', id] });
 
-  if (product && !loaded) {
-    setForm({
-      name: product.name, description: product.description, price: product.price,
-      categoryId: product.categoryId ?? '', availability: product.availability,
-      leadTimeWeeksMin: product.leadTimeWeeksMin ?? 4, leadTimeWeeksMax: product.leadTimeWeeksMax ?? 8,
-      stockStatus: product.stockStatus, isPublished: product.isPublished, isFeatured: product.isFeatured,
-      imageKeys: product.imageKeys ?? [],
-    });
-    setLoaded(true);
-  }
-
-  const saveMutation = useMutation({
-    mutationFn: async () => {
-      const payload = {
-        name: form.name,
-        description: form.description,
-        price: Number(form.price),
-        categoryId: form.categoryId || null,
-        availability: form.availability,
-        leadTimeWeeksMin: form.availability === 'preorder' ? Number(form.leadTimeWeeksMin) : null,
-        leadTimeWeeksMax: form.availability === 'preorder' ? Number(form.leadTimeWeeksMax) : null,
-        stockStatus: form.availability === 'ready_stock' ? form.stockStatus : 'in_stock',
-        isPublished: form.isPublished,
-        isFeatured: form.isFeatured,
-        images: form.imageKeys,
-      };
-      if (isNew) return createProduct(payload);
-      return updateProduct(id!, payload);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
-      toast.success(isNew ? 'Product created' : 'Product updated');
-      router.push('/admin/products');
-    },
-    onError: (err) => toast.error(err instanceof ApiError ? err.message : 'Failed to save'),
+  const publishMutation = useMutation({
+    mutationFn: ({ isPublished }: { isPublished: boolean }) => publishProduct(id, isPublished),
+    onSuccess: invalidate,
+    onError: () => toast.error('Failed to update'),
   });
 
-  const set = (key: string, value: any) => setForm((prev) => ({ ...prev, [key]: value }));
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteProduct(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      toast.success('Product deleted');
+      router.push('/admin/products');
+    },
+    onError: (err) => toast.error(err instanceof ApiError ? err.message : 'Failed to delete'),
+  });
 
-  async function handleUpload(files: FileList) {
-    for (const file of Array.from(files)) {
-      try {
-        const result = await uploadImage('products', file);
-        set('imageKeys', [...form.imageKeys, result.key]);
-      } catch (err) {
-        toast.error(`Failed to upload ${file.name}`);
-      }
-    }
+  if (isLoading) {
+    return <AdminLayout title="Product" eyebrow="Loading"><div className="skeleton" style={{ height: 400, borderRadius: 12 }} /></AdminLayout>;
   }
 
+  if (!product) {
+    return (
+      <AdminLayout title="Product" eyebrow="Not found">
+        <div className="empty-state"><h2>Product not found</h2><p>It may have been deleted.</p></div>
+      </AdminLayout>
+    );
+  }
+
+  const p = product as AdminProduct;
+
   return (
-    <AdminLayout title={isNew ? 'New product' : 'Edit product'} eyebrow={isNew ? 'Create a new piece' : 'Update this piece'}>
-      <section className="admin-card" style={{ maxWidth: 760 }}>
-        <h2>Details</h2>
-        <div className="field"><label>Name</label><input value={form.name} onChange={(e) => set('name', e.target.value)} /></div>
-        <div className="field"><label>Description</label><textarea value={form.description} onChange={(e) => set('description', e.target.value)} rows={5} /></div>
-        <div className="field"><label>Price (NGN)</label><input type="number" value={form.price} onChange={(e) => set('price', e.target.value)} /></div>
-        <div className="field">
-          <label>Category</label>
-          <select value={form.categoryId} onChange={(e) => set('categoryId', e.target.value)}>
-            <option value="">Uncategorised</option>
-            {cats?.items.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-        </div>
-        <div className="field">
-          <label>Availability</label>
-          <select value={form.availability} onChange={(e) => set('availability', e.target.value)}>
-            <option value="preorder">Preorder</option>
-            <option value="ready_stock">Ready stock</option>
-          </select>
-        </div>
-        {form.availability === 'preorder' ? (
-          <div style={{ display: 'flex', gap: 12 }}>
-            <div className="field" style={{ flex: 1 }}><label>Lead time min (weeks)</label><input type="number" value={form.leadTimeWeeksMin} onChange={(e) => set('leadTimeWeeksMin', e.target.value)} /></div>
-            <div className="field" style={{ flex: 1 }}><label>Lead time max (weeks)</label><input type="number" value={form.leadTimeWeeksMax} onChange={(e) => set('leadTimeWeeksMax', e.target.value)} /></div>
-          </div>
-        ) : (
-          <div className="field">
-            <label>Stock status</label>
-            <select value={form.stockStatus} onChange={(e) => set('stockStatus', e.target.value)}>
-              <option value="in_stock">In stock</option>
-              <option value="limited">Limited</option>
-              <option value="out_of_stock">Out of stock</option>
-            </select>
-          </div>
-        )}
-        <div className="field">
-          <label><input type="checkbox" checked={form.isPublished} onChange={(e) => set('isPublished', e.target.checked)} /> Published</label>
-          <label style={{ marginLeft: 16 }}><input type="checkbox" checked={form.isFeatured} onChange={(e) => set('isFeatured', e.target.checked)} /> Featured</label>
-        </div>
+    <AdminLayout title={p.name} eyebrow="Product details">
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
+        <button className="button button-dark" onClick={() => setEditOpen(true)}>Edit details</button>
+        <button className="button" onClick={() => setImagesOpen(true)}>Edit images</button>
+        <button className="button" onClick={() => publishMutation.mutate({ isPublished: !p.isPublished })}>
+          {p.isPublished ? 'Unpublish' : 'Publish'}
+        </button>
+        <button
+          className="button"
+          style={{ color: 'var(--danger)' }}
+          onClick={() => { if (confirm(`Delete "${p.name}"? This cannot be undone.`)) deleteMutation.mutate(); }}
+        >
+          Delete
+        </button>
+      </div>
 
-        <h2 style={{ marginTop: 28 }}>Images</h2>
-        <p className="helper">First image is the cover. Upload up to 8 images.</p>
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 12 }}>
-          {form.imageKeys.map((key: string, i: number) => (
-            <div key={key} style={{ position: 'relative', width: 96, height: 96 }}>
-              <Image src={`/api/admin/uploads?preview=${encodeURIComponent(key)}`} alt={`Image ${i + 1}`} width={96} height={96} style={{ borderRadius: 8, objectFit: 'cover', width: '100%', height: '100%' }} unoptimized />
-              {i === 0 && <span style={{ position: 'absolute', top: 4, left: 4, fontSize: 10, background: 'var(--gold-text)', color: '#fff', padding: '2px 6px', borderRadius: 4 }}>Cover</span>}
-              <button onClick={() => set('imageKeys', form.imageKeys.filter((_: string, idx: number) => idx !== i))} style={{ position: 'absolute', top: 4, right: 4, width: 22, height: 22, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,.6)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={12} /></button>
-            </div>
-          ))}
-          {form.imageKeys.length < 8 && (
-            <button onClick={() => fileInputRef.current?.click()} style={{ width: 96, height: 96, borderRadius: 8, border: '2px dashed var(--border)', background: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, color: 'var(--muted)' }}>
-              <Upload size={20} />
-              <span style={{ fontSize: 11 }}>Upload</span>
-            </button>
+      <div className="admin-columns">
+        <section className="admin-card">
+          <h2>Details</h2>
+          <div className="admin-row" style={{ cursor: 'default' }}><div><span className="helper">Name</span><strong style={{ display: 'block' }}>{p.name}</strong></div></div>
+          <div className="admin-row" style={{ cursor: 'default' }}><div><span className="helper">Price</span><strong style={{ display: 'block' }}>{formatNaira(p.price)}</strong></div></div>
+          <div className="admin-row" style={{ cursor: 'default' }}><div><span className="helper">Category</span><strong style={{ display: 'block' }}>{p.category?.name ?? 'Uncategorised'}</strong></div></div>
+          <div className="admin-row" style={{ cursor: 'default' }}><div><span className="helper">Availability</span><strong style={{ display: 'block' }}>{p.availability === 'preorder' ? 'Preorder' : 'Ready stock'}</strong></div></div>
+          {p.availability === 'preorder' && p.leadTime && (
+            <div className="admin-row" style={{ cursor: 'default' }}><div><span className="helper">Lead time</span><strong style={{ display: 'block' }}>{p.leadTime.text}</strong></div></div>
           )}
-        </div>
-        <input ref={fileInputRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={(e) => e.target.files && handleUpload(e.target.files)} />
+          {p.availability === 'ready_stock' && (
+            <div className="admin-row" style={{ cursor: 'default' }}><div><span className="helper">Stock status</span><strong style={{ display: 'block' }}>{p.stockStatus.replace(/_/g, ' ')}</strong></div></div>
+          )}
+          <div className="admin-row" style={{ cursor: 'default' }}>
+            <div><span className="helper">Status</span></div>
+            <span className={`status-chip ${p.isPublished ? 'green' : ''}`}>{p.isPublished ? 'Published' : 'Draft'}</span>
+            {p.isFeatured && <span className="badge">Featured</span>}
+          </div>
+          {p.effectiveDiscount && (
+            <div className="admin-row" style={{ cursor: 'default' }}>
+              <div><span className="helper">Discount</span><strong style={{ display: 'block' }}>{p.effectiveDiscount.eventName} · −{p.effectiveDiscount.percentage}%</strong></div>
+            </div>
+          )}
+          <div style={{ marginTop: 18 }}>
+            <span className="helper">Description</span>
+            <p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{p.description || 'No description yet.'}</p>
+          </div>
+        </section>
 
-        <div style={{ marginTop: 28, display: 'flex', gap: 12 }}>
-          <button className="button button-dark" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending || !form.name}>{saveMutation.isPending ? 'Saving...' : 'Save product'}</button>
-          <button className="button" onClick={() => router.push('/admin/products')}>Cancel</button>
-        </div>
-      </section>
+        <section className="admin-card">
+          <h2>Images</h2>
+          {p.images.length ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 12, marginTop: 12 }}>
+              {p.images.map((src, i) => (
+                <div key={src} style={{ position: 'relative' }}>
+                  <Image src={src} alt={`${p.name} image ${i + 1}`} width={110} height={110} style={{ borderRadius: 10, objectFit: 'cover', width: '100%', height: 110 }} unoptimized />
+                  {i === 0 && <span style={{ position: 'absolute', top: 6, left: 6, fontSize: 10, background: 'var(--gold-text)', color: '#fff', padding: '2px 6px', borderRadius: 4 }}>Cover</span>}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="helper" style={{ marginTop: 10 }}>No images yet. Use “Edit images” to upload some.</p>
+          )}
+        </section>
+      </div>
+
+      <ProductFormModal
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        initial={p ? {
+          id: p.id,
+          name: p.name,
+          description: p.description,
+          price: p.price,
+          categoryId: p.categoryId ?? '',
+          availability: p.availability,
+          leadTimeWeeksMin: p.leadTimeWeeksMin ?? 4,
+          leadTimeWeeksMax: p.leadTimeWeeksMax ?? 8,
+          stockStatus: p.stockStatus,
+          isPublished: p.isPublished,
+          isFeatured: p.isFeatured,
+          imageKeys: p.imageKeys ?? [],
+        } : emptyProductForm}
+        onSaved={invalidate}
+      />
+      <EditProductImagesModal
+        open={imagesOpen}
+        onOpenChange={setImagesOpen}
+        product={{ id: p.id, name: p.name, imageKeys: p.imageKeys ?? [] }}
+        onSaved={invalidate}
+      />
     </AdminLayout>
   );
 }

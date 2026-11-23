@@ -8,7 +8,7 @@ const envSchema = z.object({
   ACCESS_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(15),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(7),
   ADMIN_SETUP_SECRET: z.string().default('dev-setup-secret'),
-  EMAIL_PROVIDER: z.enum(['brevo', 'resend']).default('brevo'),
+  EMAIL_PROVIDER: z.enum(['brevo', 'resend']).default('brevo').optional(),
   EMAIL_FROM_NAME: z.string().default('TrG_studio'),
   EMAIL_FROM_ADDRESS: z.string().default('hello@example.com'),
   RESEND_FROM_NAME: z.string().default('TrG_studio'),

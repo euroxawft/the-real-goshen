@@ -5,6 +5,7 @@ import { SiteChrome } from '@/components/public/site-chrome';
 import { getChromeData } from '@/lib/chrome';
 import { ProductCard } from '@/components/public/product-card';
 import { SectionHeading } from '@/components/public/section-heading';
+import { HeroSlider } from '@/components/public/hero-slider';
 import { listPublicProducts } from '@/server/resources/products/products.service';
 import { listCategories } from '@/server/resources/categories/categories.service';
 import { getRunningEvents } from '@/server/resources/discounts/discounts.service';
@@ -32,26 +33,12 @@ export default async function Home() {
   const hasFeatured = featuredResult.items.length > 0;
   const hasCategories = categories.length > 0;
   const hasBlog = blogResult.length > 0;
-  const heroHeadline = settings?.heroHeadline || 'Pieces that make an entrance.';
-  const heroSub = settings?.heroSubheadline || 'Considered accessories for the woman becoming more of herself. Discover low-price finds, ready stock gems, and preorder pieces worth waiting for.';
   const whatsapp = settings?.whatsappNumber ?? '';
   const whatsappUrl = whatsapp ? `https://wa.me/${whatsapp.replace(/[^0-9]/g, '')}` : '/contact';
 
   return (
     <SiteChrome settings={settings} categories={categories} discountBar={discountBar}>
-      <section className="hero">
-        <div className="container hero-content">
-          <span className="eyebrow eyebrow-light">Bags · Shoes · Accessories</span>
-          <span className="script">Style. Confidence. You.</span>
-          <h1>{heroHeadline}</h1>
-          <p>{heroSub}</p>
-          <div className="hero-actions">
-            <Link href="/products" className="button button-gold">Shop the collection <ArrowRight size={16} /></Link>
-            <Link href={whatsappUrl} className="button button-outline">Chat on WhatsApp <MessageCircle size={16} /></Link>
-          </div>
-        </div>
-        <div className="scroll-cue">&#x2304;</div>
-      </section>
+      <HeroSlider />
 
       {hasFeatured && (
         <section className="section">

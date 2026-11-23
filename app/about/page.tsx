@@ -33,7 +33,7 @@ export default async function AboutPage() {
 
   return (
     <SiteChrome settings={settings} categories={categories} discountBar={discountBar}>
-      <section className="page-hero page-hero-enhanced">
+      <section className="page-hero about-page-hero">
         <div className="container">
           <span className="breadcrumb">Home / About</span>
           <h1>Style, with intention.</h1>

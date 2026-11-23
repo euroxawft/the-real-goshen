@@ -34,6 +34,20 @@ button { cursor:pointer; }
 .button-light-outline { border-color:var(--ink); color:var(--ink); }
 .button-light-outline:hover { background:var(--ink); color:var(--gold-highlight); }
 .hero { min-height:calc(100vh - 106px); display:flex; align-items:center; position:relative; overflow:hidden; background:radial-gradient(circle at 70% 25%,rgba(200,152,104,.28),transparent 32%),linear-gradient(115deg,#0a0a0a 0%,#1a1714 52%,#4a3427 100%); color:#fff; }
+
+/* ===== HERO SLIDER ===== */
+.hero-slider { min-height:calc(100vh - 106px); position:relative; display:flex; align-items:center; overflow:hidden; color:#fff; background:linear-gradient(115deg,#0a0a0a 0%,#1a1714 52%,#4a3427 100%); }
+.hero-slide { position:absolute; inset:0; display:flex; align-items:center; opacity:0; transition:opacity .9s ease; pointer-events:none; }
+.hero-slide.active { opacity:1; pointer-events:auto; position:relative; }
+.hero-slide-bg { position:absolute; inset:0; z-index:0; background:radial-gradient(circle at 75% 30%,rgba(200,152,104,.30),transparent 42%); }
+.hero-slide-bg img { object-fit:cover; filter:saturate(.85); }
+.hero-slide-content { position:relative; z-index:1; padding:100px 0 130px; }
+.hero-slide-content h1 { max-width:640px; }
+.hero-slide-content p { max-width:520px; font-size:17px; line-height:1.65; color:#d9d1c8; margin:22px 0 30px; }
+.hero-slider-dots { position:absolute; bottom:30px; left:50%; transform:translateX(-50%); display:flex; gap:10px; z-index:2; }
+.hero-dot { width:10px; height:10px; border-radius:999px; border:none; background:rgba(255,255,255,.35); cursor:pointer; transition:all .3s ease; padding:0; }
+.hero-dot.active { background:var(--gold-text,#c9a96a); width:28px; }
+@media (max-width:767px) { .hero-slider { min-height:calc(100vh - 96px); } .hero-slide-content { padding:70px 0 110px; } }
 .hero:after { position:absolute; inset:0; content:''; background:linear-gradient(90deg,rgba(0,0,0,.25),rgba(0,0,0,.1)),url('/trg-logo.jpg') no-repeat 86% 50% / min(54vw,680px) auto; opacity:.16; mix-blend-mode:screen; }
 .hero-content { position:relative; z-index:1; padding:100px 0 120px; max-width:650px; }
 .eyebrow { display:block; color:var(--gold-text); text-transform:uppercase; font-size:11px; font-weight:700; letter-spacing:.18em; line-height:1.4; }
@@ -209,6 +223,10 @@ h3 { font-size:26px; }
 .contact-social-link:hover { border-color:var(--gold); color:var(--gold-highlight); transform:translateY(-2px); }
 
 /* ===== ABOUT PAGE ===== */
+.about-page-hero { position:relative; overflow:hidden; background:linear-gradient(115deg,#0a0a0a 0%,#1a1714 55%,#4a3427 100%); }
+.about-page-hero:after { position:absolute; inset:0; content:''; background:radial-gradient(circle at 80% 25%,rgba(200,152,104,.30),transparent 42%),url('/trg-logo-600.jpg') no-repeat 88% 45% / min(46vw,560px) auto; opacity:.18; mix-blend-mode:screen; pointer-events:none; }
+.about-page-hero .container { position:relative; z-index:1; }
+.about-page-hero .breadcrumb { display:block; margin-bottom:8px; }
 .about-story-grid { display:grid; grid-template-columns:1.1fr .9fr; gap:64px; align-items:center; max-width:1080px; margin:0 auto; }
 .about-story-copy h2 { margin-bottom:0; }
 .about-story-image { position:relative; }

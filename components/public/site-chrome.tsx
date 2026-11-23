@@ -246,13 +246,16 @@ export function SiteChrome({ children, settings, categories, discountBar }: { ch
             {settings?.whatsappNumber && <a href={`https://wa.me/${settings.whatsappNumber.replace(/[^0-9]/g, '')}`}>WhatsApp</a>}
           </div>
           <div>
-            <h4>Follow along</h4>
-            {settings?.storeEmail && <a href={`mailto:${settings.storeEmail}`}>{settings.storeEmail}</a>}
-            {settings?.instagramUrl && <a href={settings.instagramUrl}>Instagram</a>}
-            {settings?.tiktokUrl && <a href={settings.tiktokUrl}>TikTok</a>}
-            {settings?.facebookUrl && <a href={settings.facebookUrl}>Facebook</a>}
-            {settings?.whatsappNumber && <a href={`https://wa.me/${settings.whatsappNumber.replace(/[^0-9]/g, '')}`}>WhatsApp</a>}
+            <h4>Reach us</h4>
+            {settings?.storeEmail && <a href={`mailto:${settings.storeEmail}`} style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Mail size={15} /> {settings.storeEmail}</a>}
+            {settings?.whatsappNumber && <a href={`https://wa.me/${settings.whatsappNumber.replace(/[^0-9]/g, '')}`} style={{ display: 'flex', alignItems: 'center', gap: 8 }}><MessageCircle size={15} /> WhatsApp: {settings.whatsappNumber}</a>}
+            {settings?.instagramUrl && <a href={settings.instagramUrl} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Instagram size={15} /> Instagram</a>}
+            {settings?.tiktokUrl && <a href={settings.tiktokUrl} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Music2 size={15} /> TikTok</a>}
             {settings?.businessHours && <p className="muted-dark">{settings.businessHours}</p>}
+          </div>
+          <div>
+            <h4>Follow along</h4>
+            <p>Daily drops, styling notes, and first looks at new pieces.</p>
             <div className="footer-socials">
               {settings?.instagramUrl && <a href={settings.instagramUrl} aria-label="Instagram" className="footer-social-link"><Instagram size={18} /></a>}
               {settings?.tiktokUrl && <a href={settings.tiktokUrl} aria-label="TikTok" className="footer-social-link"><Music2 size={18} /></a>}

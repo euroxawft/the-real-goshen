@@ -1,7 +1,7 @@
 'use client';
 
-import { Check, MessageCircle } from 'lucide-react';
-import { FormEvent, useEffect, useState } from 'react';
+import { Check, MessageCircle, Mail, Instagram, Music2, MapPin, Clock3 } from 'lucide-react';
+import { FormEvent, useState } from 'react';
 import { SiteChrome } from '@/components/public/site-chrome';
 import { useChromeData } from '@/lib/chrome-client';
 import { submitContact } from '@/lib/api/contacts';
@@ -54,10 +54,45 @@ export default function ContactPage() {
   const storeEmail = s?.storeEmail ?? 'hello@trgstudio.com';
   const wc = { settings: chrome.settings, categories: chrome.categories, discountBar: chrome.discountBar };
 
+  const contactCards = [
+    { icon: MessageCircle, label: 'WhatsApp', value: s?.whatsappNumber ? `Chat with us` : 'Not available', href: whatsappUrl, available: Boolean(s?.whatsappNumber) },
+    { icon: Mail, label: 'Email', value: storeEmail, href: `mailto:${storeEmail}`, available: true },
+    { icon: Instagram, label: 'Instagram', value: s?.instagramUrl ? '@trg_studio' : 'Coming soon', href: s?.instagramUrl ?? '#', available: Boolean(s?.instagramUrl) },
+    { icon: Music2, label: 'TikTok', value: s?.tiktokUrl ? '@trg_studio' : 'Coming soon', href: s?.tiktokUrl ?? '#', available: Boolean(s?.tiktokUrl) },
+  ];
+
   return (
     <SiteChrome {...wc}>
-      <section className="page-hero"><div className="container"><span className="breadcrumb">Home / Contact</span><h1>Get in touch</h1><p>We usually reply within 24 hours.</p></div></section>
-      <div className="container form-layout">
+      <section className="page-hero page-hero-enhanced">
+        <div className="container">
+          <span className="breadcrumb">Home / Contact</span>
+          <h1>Get in touch</h1>
+          <p>We usually reply within 24 hours. Whether it is a question about a piece, a custom request, or just to say hello — we are happy to hear from you.</p>
+        </div>
+      </section>
+
+      <div className="container" style={{ maxWidth: 1080, paddingTop: 56 }}>
+        <div className="contact-cards-grid">
+          {contactCards.map((card) => {
+            const Icon = card.icon;
+            return (
+              <a
+                key={card.label}
+                href={card.href}
+                className={`contact-card ${card.available ? '' : 'contact-card-disabled'}`}
+                aria-disabled={!card.available}
+                onClick={(e) => { if (!card.available) e.preventDefault(); }}
+              >
+                <div className="contact-card-icon"><Icon size={22} /></div>
+                <span className="contact-card-label">{card.label}</span>
+                <span className="contact-card-value">{card.value}</span>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="container form-layout" style={{ paddingTop: 48, paddingBottom: 80 }}>
         <div className="form-card">
           {sent ? (
             <div className="success-box">
@@ -90,10 +125,28 @@ export default function ContactPage() {
           <h2>Good style is better shared.</h2>
           <p>For quick questions and updates, WhatsApp is usually the fastest way to reach us.</p>
           {s?.whatsappNumber && <a href={whatsappUrl} className="button whatsapp-button"><MessageCircle size={17} /> Chat on WhatsApp</a>}
-          <div style={{ marginTop: 35 }}>
-            <p><strong>Email</strong><br /><a href={`mailto:${storeEmail}`}>{storeEmail}</a></p>
-            {s?.businessHours && <p><strong>Hours</strong><br />{s.businessHours}</p>}
-            {s?.address && <p><strong>Based in</strong><br />{s.address}</p>}
+          <div className="contact-info-list">
+            <div className="contact-info-item">
+              <Mail size={16} />
+              <div><strong>Email</strong><a href={`mailto:${storeEmail}`}>{storeEmail}</a></div>
+            </div>
+            {s?.businessHours && (
+              <div className="contact-info-item">
+                <Clock3 size={16} />
+                <div><strong>Hours</strong><span>{s.businessHours}</span></div>
+              </div>
+            )}
+            {s?.address && (
+              <div className="contact-info-item">
+                <MapPin size={16} />
+                <div><strong>Based in</strong><span>{s.address}</span></div>
+              </div>
+            )}
+          </div>
+          <div className="contact-socials">
+            {s?.instagramUrl && <a href={s.instagramUrl} aria-label="Instagram" className="contact-social-link"><Instagram size={20} /></a>}
+            {s?.tiktokUrl && <a href={s.tiktokUrl} aria-label="TikTok" className="contact-social-link"><Music2 size={20} /></a>}
+            {s?.whatsappNumber && <a href={whatsappUrl} aria-label="WhatsApp" className="contact-social-link"><MessageCircle size={20} /></a>}
           </div>
         </aside>
       </div>

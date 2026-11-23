@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Menu, Search, ShoppingBag, X, ChevronDown, Instagram, Facebook } from 'lucide-react';
+import { Menu, Search, ShoppingBag, X, ChevronDown, Instagram, Facebook, Music2, MessageCircle, Mail } from 'lucide-react';
 import { useCart } from '@/lib/cart/cart-store';
 import { useCountdown } from '@/hooks/use-countdown';
 import { formatNaira } from '@/lib/format';
@@ -217,6 +217,7 @@ export function SiteChrome({ children, settings, categories, discountBar }: { ch
               )}
               <div className="drawer-socials">
                 {settings?.instagramUrl && <a href={settings.instagramUrl} aria-label="Instagram"><Instagram size={20} /></a>}
+                {settings?.tiktokUrl && <a href={settings.tiktokUrl} aria-label="TikTok"><Music2 size={20} /></a>}
                 {settings?.facebookUrl && <a href={settings.facebookUrl} aria-label="Facebook"><Facebook size={20} /></a>}
               </div>
             </div>
@@ -248,9 +249,17 @@ export function SiteChrome({ children, settings, categories, discountBar }: { ch
             <h4>Follow along</h4>
             {settings?.storeEmail && <a href={`mailto:${settings.storeEmail}`}>{settings.storeEmail}</a>}
             {settings?.instagramUrl && <a href={settings.instagramUrl}>Instagram</a>}
-            {settings?.facebookUrl && <a href={settings.facebookUrl}>Facebook</a>}
             {settings?.tiktokUrl && <a href={settings.tiktokUrl}>TikTok</a>}
+            {settings?.facebookUrl && <a href={settings.facebookUrl}>Facebook</a>}
+            {settings?.whatsappNumber && <a href={`https://wa.me/${settings.whatsappNumber.replace(/[^0-9]/g, '')}`}>WhatsApp</a>}
             {settings?.businessHours && <p className="muted-dark">{settings.businessHours}</p>}
+            <div className="footer-socials">
+              {settings?.instagramUrl && <a href={settings.instagramUrl} aria-label="Instagram" className="footer-social-link"><Instagram size={18} /></a>}
+              {settings?.tiktokUrl && <a href={settings.tiktokUrl} aria-label="TikTok" className="footer-social-link"><Music2 size={18} /></a>}
+              {settings?.whatsappNumber && <a href={`https://wa.me/${settings.whatsappNumber.replace(/[^0-9]/g, '')}`} aria-label="WhatsApp" className="footer-social-link"><MessageCircle size={18} /></a>}
+              {settings?.facebookUrl && <a href={settings.facebookUrl} aria-label="Facebook" className="footer-social-link"><Facebook size={18} /></a>}
+              {settings?.storeEmail && <a href={`mailto:${settings.storeEmail}`} aria-label="Email" className="footer-social-link"><Mail size={18} /></a>}
+            </div>
           </div>
         </div>
         <div className="container footer-bottom">

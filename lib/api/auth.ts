@@ -4,7 +4,7 @@ export async function getSetupStatus() {
   return apiFetch<{ needsSetup: boolean }>('/api/admin/auth/setup-status');
 }
 
-export async function setup(data: { name: string; email: string; password: string; secret: string }) {
+export async function setup(data: { name: string; email: string; password: string; setupSecret: string }) {
   return apiFetch<{ admin: { id: string; name: string; email: string } }>('/api/admin/auth/setup', { method: 'POST', body: JSON.stringify(data) });
 }
 

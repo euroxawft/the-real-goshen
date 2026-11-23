@@ -39,7 +39,7 @@ export default function AdminSetup() {
         name: formData.get('name') as string,
         email: formData.get('email') as string,
         password: formData.get('password') as string,
-        secret: formData.get('secret') as string,
+        setupSecret: formData.get('secret') as string,
       });
 
       router.push('/admin');

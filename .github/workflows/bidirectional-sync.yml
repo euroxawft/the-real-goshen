@@ -1,0 +1,103 @@
+
+name: Bidirectional Repository Sync
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: exact-mirror-${{ github.repository }}-main
+  cancel-in-progress: false
+
+jobs:
+  synchronize:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Mirror to other repository
+        shell: bash
+        env:
+          TARGET_REPO: ${{ vars.SYNC_TARGET }}
+          MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
+
+        run: |
+          set -euo pipefail
+
+          # Validate configuration
+          if [[ -z "$TARGET_REPO" || -z "$MIRROR_TOKEN" ]]; then
+            echo "Missing SYNC_TARGET or MIRROR_TOKEN."
+            exit 1
+          fi
+
+          if [[ "$TARGET_REPO" == "$GITHUB_REPOSITORY" ]]; then
+            echo "Cannot mirror a repository to itself."
+            exit 1
+          fi
+
+          if [[ ! "$TARGET_REPO" =~ ^[^/]+/[^/]+$ ]]; then
+            echo "Invalid target repository format."
+            exit 1
+          fi
+
+          # Configure target remote
+          git remote add target \
+            "https://github.com/${TARGET_REPO}.git"
+
+          AUTH_HEADER="AUTHORIZATION: basic $(printf \
+            'x-access-token:%s' "$MIRROR_TOKEN" | base64 | tr -d '\n')"
+
+          # Fetch latest source commit
+          git fetch origin \
+            +refs/heads/main:refs/remotes/origin/main
+
+          SOURCE_SHA=$(git rev-parse refs/remotes/origin/main)
+
+          # Fetch destination
+          git -c http.extraheader="$AUTH_HEADER" \
+            fetch target \
+            +refs/heads/main:refs/remotes/target/main
+
+          TARGET_SHA=$(git rev-parse refs/remotes/target/main)
+
+          # Avoid unnecessary synchronization and loops
+          if [[ "$SOURCE_SHA" == "$TARGET_SHA" ]]; then
+            echo "Repositories already have identical commits."
+            exit 0
+          fi
+
+          echo "Source: $SOURCE_SHA"
+          echo "Target: $TARGET_SHA"
+
+          # Create a unique backup of destination main
+          SAFE_SOURCE="${GITHUB_REPOSITORY//\//-}"
+
+          BACKUP_REF="refs/heads/backup/pre-sync-main/${SAFE_SOURCE}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+
+          git -c http.extraheader="$AUTH_HEADER" \
+            push target "${TARGET_SHA}:${BACKUP_REF}"
+
+          echo "Destination backup created: ${BACKUP_REF}"
+
+          # Replace destination main with source main.
+          # The lease prevents overwriting a destination
+          # that changed after we fetched it.
+          git -c http.extraheader="$AUTH_HEADER" \
+            push \
+            --force-with-lease="refs/heads/main:${TARGET_SHA}" \
+            target \
+            "${SOURCE_SHA}:refs/heads/main"
+
+          echo "Successfully synchronized ${TARGET_REPO}"
+          echo "Destination main now matches ${GITHUB_REPOSITORY}"

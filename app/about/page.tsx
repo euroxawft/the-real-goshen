@@ -1,7 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, Sparkles, Users } from 'lucide-react';
-import { SiteChrome, getChromeData } from '@/components/public/site-chrome';
+import { SiteChrome } from '@/components/public/site-chrome';
+import { getChromeData } from '@/lib/chrome';
 import { getPublicSettings } from '@/server/resources/settings/settings.service';
 
 export const revalidate = 60;

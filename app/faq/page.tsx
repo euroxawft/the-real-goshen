@@ -1,4 +1,5 @@
-import { SiteChrome, getChromeData } from '@/components/public/site-chrome';
+import { SiteChrome } from '@/components/public/site-chrome';
+import { getChromeData } from '@/lib/chrome';
 import { FaqAccordion } from '@/components/public/faq-accordion';
 import { db } from '@/server/db';
 import { faqs } from '@/server/db/schema';

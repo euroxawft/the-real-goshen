@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
-import { SiteChrome, getChromeData } from '@/components/public/site-chrome';
+import { SiteChrome } from '@/components/public/site-chrome';
+import { getChromeData } from '@/lib/chrome';
 import { db } from '@/server/db';
 import { blogPosts } from '@/server/db/schema';
 import { and, desc, eq, lte } from 'drizzle-orm';

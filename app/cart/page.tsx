@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { ArrowRight, Clock3, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
-import { SiteChrome, getChromeData } from '@/components/public/site-chrome';
+import { SiteChrome } from '@/components/public/site-chrome';
+import { useChromeData } from '@/lib/chrome-client';
 import { useCart } from '@/lib/cart/cart-store';
 import { useCartPricing } from '@/lib/cart/use-cart-pricing';
 import { formatNaira } from '@/lib/format';
@@ -11,16 +12,12 @@ import { useEffect, useState } from 'react';
 export default function CartPage() {
   const { lines, setQuantity, remove, hydrated } = useCart();
   const pricing = useCartPricing();
-  const [chrome, setChrome] = useState<{ settings: any; categories: any[]; discountBar: any } | null>(null);
-
-  useEffect(() => {
-    getChromeData().then(setChrome).catch(() => {});
-  }, []);
+  const chrome = useChromeData();
 
   if (!hydrated) return <SiteChrome settings={null} categories={[]} discountBar={null}><div className="container" style={{ paddingTop: 120, paddingBottom: 120 }}><div className="skeleton" style={{ height: 400, borderRadius: 16 }} /></div></SiteChrome>;
 
   return (
-    <SiteChrome settings={chrome?.settings ?? null} categories={chrome?.categories ?? []} discountBar={chrome?.discountBar ?? null}>
+    <SiteChrome settings={chrome.settings} categories={chrome.categories} discountBar={chrome.discountBar}>
       <section className="page-hero"><div className="container"><span className="breadcrumb">Home / Your picks</span><h1>Your picks</h1><p>Review the pieces you love. Nothing is paid for on this website.</p></div></section>
       <div className="container">
         {lines.length === 0 ? (

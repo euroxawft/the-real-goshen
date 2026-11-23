@@ -1,5 +1,6 @@
 import { Search, SlidersHorizontal } from 'lucide-react';
-import { SiteChrome, getChromeData } from '@/components/public/site-chrome';
+import { SiteChrome } from '@/components/public/site-chrome';
+import { getChromeData } from '@/lib/chrome';
 import { ProductCard } from '@/components/public/product-card';
 import { listPublicProducts } from '@/server/resources/products/products.service';
 import { listCategories } from '@/server/resources/categories/categories.service';

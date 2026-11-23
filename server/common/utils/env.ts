@@ -2,16 +2,16 @@ import { z } from 'zod';
 
 const envSchema = z.object({
   NEXT_PUBLIC_SITE_URL: z.string().url().default('http://localhost:3000'),
-  DATABASE_URL: z.string().min(1),
-  JWT_ACCESS_SECRET: z.string().min(1),
-  JWT_REFRESH_SECRET: z.string().min(1),
+  DATABASE_URL: z.string().default('postgresql://localhost:5432/trg'),
+  JWT_ACCESS_SECRET: z.string().default('dev-access-secret-change-me'),
+  JWT_REFRESH_SECRET: z.string().default('dev-refresh-secret-change-me'),
   ACCESS_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(15),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(7),
-  ADMIN_SETUP_SECRET: z.string().min(1),
+  ADMIN_SETUP_SECRET: z.string().default('dev-setup-secret'),
   EMAIL_PROVIDER: z.enum(['brevo', 'resend']).default('brevo'),
-  EMAIL_FROM_NAME: z.string().min(1),
-  EMAIL_FROM_ADDRESS: z.string().email(),
-  STORE_NOTIFY_EMAIL: z.string().email(),
+  EMAIL_FROM_NAME: z.string().default('TrG_studio'),
+  EMAIL_FROM_ADDRESS: z.string().default('hello@example.com'),
+  STORE_NOTIFY_EMAIL: z.string().default('store@example.com'),
   BREVO_API_KEY: z.string().optional(),
   RESEND_API_KEY: z.string().optional(),
   R2_ACCOUNT_ID: z.string().optional(),
@@ -19,7 +19,7 @@ const envSchema = z.object({
   R2_SECRET_ACCESS_KEY: z.string().optional(),
   R2_BUCKET_NAME: z.string().optional(),
   R2_PUBLIC_URL: z.string().url().optional(),
-  DEFAULT_WHATSAPP_NUMBER: z.string().min(1),
+  DEFAULT_WHATSAPP_NUMBER: z.string().default(''),
   CRON_SECRET: z.string().optional(),
 });
 
@@ -46,6 +46,11 @@ export const env = envSchema.parse({
   CRON_SECRET: process.env.CRON_SECRET,
 });
 
-if (env.NODE_ENV === 'production' && (env.NEXT_PUBLIC_SITE_URL.includes('localhost') || env.NEXT_PUBLIC_SITE_URL.includes('127.0.0.1'))) {
+export const siteUrlIsPublic = !(
+  process.env.NODE_ENV === 'production' &&
+  (env.NEXT_PUBLIC_SITE_URL.includes('localhost') || env.NEXT_PUBLIC_SITE_URL.includes('127.0.0.1'))
+);
+
+if (!siteUrlIsPublic && process.env.NODE_ENV === 'production') {
   console.warn('[env] NEXT_PUBLIC_SITE_URL is set to a localhost address in production. Email logos and links will be broken. Set it to your live domain (e.g. https://trgstudio.com).');
 }

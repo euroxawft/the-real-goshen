@@ -2,7 +2,8 @@
 
 import { Check, MessageCircle } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
-import { SiteChrome, getChromeData } from '@/components/public/site-chrome';
+import { SiteChrome } from '@/components/public/site-chrome';
+import { useChromeData } from '@/lib/chrome-client';
 import { submitContact } from '@/lib/api/contacts';
 import { ApiError } from '@/lib/api/client';
 
@@ -18,11 +19,7 @@ export default function ContactPage() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [chrome, setChrome] = useState<{ settings: any; categories: any[]; discountBar: any } | null>(null);
-
-  useEffect(() => {
-    getChromeData().then(setChrome).catch(() => {});
-  }, []);
+  const chrome = useChromeData();
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -52,10 +49,10 @@ export default function ContactPage() {
     }
   }
 
-  const s = chrome?.settings;
+  const s = chrome.settings;
   const whatsappUrl = s?.whatsappNumber ? `https://wa.me/${s.whatsappNumber.replace(/[^0-9]/g, '')}` : '#';
   const storeEmail = s?.storeEmail ?? 'hello@trgstudio.com';
-  const wc = { settings: chrome?.settings ?? null, categories: chrome?.categories ?? [], discountBar: chrome?.discountBar ?? null };
+  const wc = { settings: chrome.settings, categories: chrome.categories, discountBar: chrome.discountBar };
 
   return (
     <SiteChrome {...wc}>

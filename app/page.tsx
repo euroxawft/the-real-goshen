@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { ArrowRight, Clock3, Heart, MessageCircle, PackageCheck, Sparkles } from 'lucide-react';
 import Image from 'next/image';
-import { SiteChrome, getChromeData } from '@/components/public/site-chrome';
+import { SiteChrome } from '@/components/public/site-chrome';
+import { getChromeData } from '@/lib/chrome';
 import { ProductCard } from '@/components/public/product-card';
 import { SectionHeading } from '@/components/public/section-heading';
 import { listPublicProducts } from '@/server/resources/products/products.service';
@@ -9,15 +10,24 @@ import { listCategories } from '@/server/resources/categories/categories.service
 import { getRunningEvents } from '@/server/resources/discounts/discounts.service';
 import { getPublicSettings } from '@/server/resources/settings/settings.service';
 import { formatNaira } from '@/lib/format';
+import { db } from '@/server/db';
+import { blogPosts } from '@/server/db/schema';
+import { and, desc, eq, lte } from 'drizzle-orm';
 
 export const revalidate = 60;
 
 export default async function Home() {
   const { settings, categories, discountBar } = await getChromeData();
-  const [featuredResult, blogResult] = await Promise.all([
+  const [featuredResult, blogRows] = await Promise.all([
     listPublicProducts({ featured: true, page: 1, limit: 8 }).catch(() => ({ items: [], total: 0 })),
-    fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/blog`, { next: { revalidate: 60 } }).then(r => r.json()).then(b => b.success ? b.data.items?.slice(0, 3) ?? [] : []).catch(() => []),
+    db.select({ id: blogPosts.id, title: blogPosts.title, slug: blogPosts.slug, excerpt: blogPosts.excerpt })
+      .from(blogPosts)
+      .where(and(eq(blogPosts.isPublished, true), lte(blogPosts.publishedAt, new Date())))
+      .orderBy(desc(blogPosts.publishedAt))
+      .limit(3)
+      .catch(() => []),
   ]);
+  const blogResult = blogRows;
 
   const hasFeatured = featuredResult.items.length > 0;
   const hasCategories = categories.length > 0;

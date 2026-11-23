@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { Check, Clock3, Copy, MessageCircle } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
-import { SiteChrome, getChromeData } from '@/components/public/site-chrome';
+import { SiteChrome } from '@/components/public/site-chrome';
+import { useChromeData } from '@/lib/chrome-client';
 import { useCart } from '@/lib/cart/cart-store';
 import { useCartPricing } from '@/lib/cart/use-cart-pricing';
 import { createInterest } from '@/lib/api/interests';
@@ -19,11 +20,7 @@ export default function SubmitPage() {
   const [success, setSuccess] = useState<SuccessData | null>(null);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [chrome, setChrome] = useState<{ settings: any; categories: any[]; discountBar: any } | null>(null);
-
-  useEffect(() => {
-    getChromeData().then(setChrome).catch(() => {});
-  }, []);
+  const chrome = useChromeData();
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -56,8 +53,8 @@ export default function SubmitPage() {
     }
   }
 
-  const s = chrome?.settings;
-  const wc = s ? { settings: s, categories: chrome?.categories ?? [], discountBar: chrome?.discountBar ?? null } : { settings: null, categories: [], discountBar: null };
+  const s = chrome.settings;
+  const wc = { settings: s, categories: chrome.categories, discountBar: chrome.discountBar };
 
   if (sent && success) {
     const waUrl = `https://wa.me/${success.whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hello TrG_studio, I am following up on ${success.reference}.`)}`;

@@ -295,22 +295,4 @@ function FeaturedCard({ onNavigate }: { onNavigate: () => void }) {
   );
 }
 
-export async function getChromeData(): Promise<{ settings: Settings | null; categories: Category[]; discountBar: DiscountBar }> {
-  try {
-    const [settingsRes, catsRes, discountRes] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/settings/public`, { next: { revalidate: 60 } }),
-      fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/categories?nonEmpty=true`, { next: { revalidate: 60 } }),
-      fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/discounts/active`, { next: { revalidate: 15 } }),
-    ]);
-    const settingsBody = await settingsRes.json();
-    const catsBody = await catsRes.json();
-    const discountBody = await discountRes.json();
-    const settings = settingsBody.success ? settingsBody.data : null;
-    const categories = catsBody.success ? (catsBody.data.items ?? []) : [];
-    const discounts = discountBody.success ? (discountBody.data.events ?? []) : [];
-    const storeWide = discounts.find((d: any) => d.scope === 'all') ?? discountBody.data?.storeWide ?? null;
-    return { settings, categories, discountBar: storeWide ? { name: storeWide.name, percentage: storeWide.percentage, endsAt: storeWide.endsAt } : null };
-  } catch {
-    return { settings: null, categories: [], discountBar: null };
-  }
-}
+

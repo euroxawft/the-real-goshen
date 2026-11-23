@@ -29,6 +29,7 @@ export default function AdminSetup() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
     setError('');
     setSubmitting(true);
 
@@ -36,8 +37,8 @@ export default function AdminSetup() {
 
     try {
       await setupAdmin({
-        name: formData.get('name') as string,
-        email: formData.get('email') as string,
+        name: (formData.get('name') as string).trim(),
+        email: (formData.get('email') as string).trim(),
         password: formData.get('password') as string,
         setupSecret: formData.get('secret') as string,
       });
@@ -102,7 +103,7 @@ export default function AdminSetup() {
         <div className="setup-logo">
           <Image
             src="/trg-logo-600.jpg"
-            alt="TrG_studio"
+            alt="TRG Studio"
             width={100}
             height={100}
             priority
@@ -129,6 +130,8 @@ export default function AdminSetup() {
               type="text"
               placeholder="Enter your full name"
               autoComplete="name"
+              minLength={2}
+              maxLength={120}
               required
             />
           </div>
@@ -151,13 +154,14 @@ export default function AdminSetup() {
               id="admin-password"
               name="password"
               type="password"
-              placeholder="Minimum 8 characters"
+              placeholder="Minimum 10 characters"
               autoComplete="new-password"
-              minLength={8}
+              minLength={10}
               required
             />
             <span className="field-hint">
-              Use a strong password with at least 8 characters.
+              Use a strong password with at least 10 characters, including
+              letters and numbers.
             </span>
           </div>
 
@@ -172,7 +176,8 @@ export default function AdminSetup() {
               required
             />
             <span className="field-hint">
-              This must match the ADMIN_SETUP_SECRET configured on your backend.
+              This must match the ADMIN_SETUP_SECRET configured on your
+              backend.
             </span>
           </div>
         </div>

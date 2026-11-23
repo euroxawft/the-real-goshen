@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AdminLayout } from '@/components/admin/admin-layout';
+import { Pagination } from '@/components/admin/pagination';
 import { listAdminContacts } from '@/lib/api/contacts';
 
 const FILTERS = [
@@ -13,23 +14,39 @@ const FILTERS = [
   { value: 'closed', label: 'Closed' },
 ] as const;
 
+const PAGE_SIZE = 20;
+
 export default function ContactsPage() {
   const [status, setStatus] = useState('');
   const [q, setQ] = useState('');
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin-contacts', status, q],
-    queryFn: () => listAdminContacts({ status: status || undefined, q: q || undefined, page: '1', limit: '50' }),
+    queryKey: ['admin-contacts', status, search, page],
+    queryFn: () => listAdminContacts({ status: status || undefined, q: search || undefined, page: String(page), limit: String(PAGE_SIZE) }),
     retry: false,
   });
 
   return (
     <AdminLayout title="Messages" eyebrow="Stay close to your customers">
-      <div className="filter-chips" style={{ marginBottom: 18 }}>
-        {FILTERS.map((f) => (
-          <button key={f.value} className={`chip ${status === f.value ? 'active' : ''}`} onClick={() => setStatus(f.value)}>{f.label}</button>
-        ))}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 12 }}>
+        <div className="filter-chips">
+          {FILTERS.map((f) => (
+            <button
+              key={f.value}
+              className={`chip ${status === f.value ? 'active' : ''}`}
+              onClick={() => { setStatus(f.value); setPage(1); }}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+        <form className="search-box" onSubmit={(e) => { e.preventDefault(); setPage(1); setSearch(q); }} style={{ maxWidth: 280 }}>
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search messages" aria-label="Search messages" />
+        </form>
       </div>
+
       <section className="admin-card">
         {isLoading ? (
           <div className="skeleton" style={{ height: 200, borderRadius: 12 }} />
@@ -48,6 +65,8 @@ export default function ContactsPage() {
           <div className="empty-state"><h2>No messages yet</h2><p>When customers contact you, their messages appear here.</p></div>
         )}
       </section>
+
+      <Pagination page={data?.page ?? page} totalPages={data?.totalPages ?? 1} onChange={setPage} />
     </AdminLayout>
   );
 }

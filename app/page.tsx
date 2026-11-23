@@ -12,7 +12,7 @@ import { getPublicSettings } from '@/server/resources/settings/settings.service'
 import { formatNaira } from '@/lib/format';
 import { db } from '@/server/db';
 import { blogPosts } from '@/server/db/schema';
-import { and, desc, eq, lte } from 'drizzle-orm';
+import { and, desc, eq, lte, isNull, or } from 'drizzle-orm';
 
 export const revalidate = 60;
 
@@ -22,7 +22,7 @@ export default async function Home() {
     listPublicProducts({ featured: true, page: 1, limit: 8 }).catch(() => ({ items: [], total: 0 })),
     db.select({ id: blogPosts.id, title: blogPosts.title, slug: blogPosts.slug, excerpt: blogPosts.excerpt })
       .from(blogPosts)
-      .where(and(eq(blogPosts.isPublished, true), lte(blogPosts.publishedAt, new Date())))
+      .where(and(eq(blogPosts.isPublished, true), or(isNull(blogPosts.publishedAt), lte(blogPosts.publishedAt, new Date()))))
       .orderBy(desc(blogPosts.publishedAt))
       .limit(3)
       .catch(() => []),
@@ -115,6 +115,54 @@ export default async function Home() {
           </div>
         </section>
       )}
+
+      <section className="section section-soft">
+        <div className="container">
+          <SectionHeading eyebrow="Why TrG_studio" title="Shopping that feels personal" />
+          <div className="category-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+            <div className="admin-card" style={{ minHeight: 0 }}>
+              <div className="step-icon"><Sparkles size={20} /></div>
+              <h3 style={{ margin: '12px 0 8px', fontSize: 20 }}>Handpicked pieces</h3>
+              <p style={{ color: 'var(--muted)', fontSize: 14, lineHeight: 1.6 }}>Every bag, shoe, and accessory is chosen with intention — no filler, no trends that fade next month.</p>
+            </div>
+            <div className="admin-card" style={{ minHeight: 0 }}>
+              <div className="step-icon"><Heart size={20} /></div>
+              <h3 style={{ margin: '12px 0 8px', fontSize: 20 }}>No payment online</h3>
+              <p style={{ color: 'var(--muted)', fontSize: 14, lineHeight: 1.6 }}>Browse freely, send your picks, and we confirm payment and delivery together on WhatsApp or by email.</p>
+            </div>
+            <div className="admin-card" style={{ minHeight: 0 }}>
+              <div className="step-icon"><PackageCheck size={20} /></div>
+              <h3 style={{ margin: '12px 0 8px', fontSize: 20 }}>Preorder worth the wait</h3>
+              <p style={{ color: 'var(--muted)', fontSize: 14, lineHeight: 1.6 }}>Can&apos;t find your size or colour? We source preorder pieces for you, usually arriving in 4 to 8 weeks.</p>
+            </div>
+            <div className="admin-card" style={{ minHeight: 0 }}>
+              <div className="step-icon"><Clock3 size={20} /></div>
+              <h3 style={{ margin: '12px 0 8px', fontSize: 20 }}>Fast replies</h3>
+              <p style={{ color: 'var(--muted)', fontSize: 14, lineHeight: 1.6 }}>We usually respond within 24 hours — real help from a real person, not a bot.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="container" style={{ maxWidth: 760 }}>
+          <SectionHeading eyebrow="Good to know" title="Questions, answered" link={{ label: 'See all FAQs', href: '/faq' }} />
+          <div className="admin-card" style={{ minHeight: 0 }}>
+            <div className="admin-row" style={{ flexDirection: 'column', alignItems: 'stretch', cursor: 'default' }}>
+              <strong>How do preorders work?</strong>
+              <p className="helper" style={{ marginTop: 6 }}>Pick a preorder piece and send it with your interests. We confirm payment and delivery, then your piece usually arrives in 4 to 8 weeks.</p>
+            </div>
+            <div className="admin-row" style={{ flexDirection: 'column', alignItems: 'stretch', cursor: 'default' }}>
+              <strong>Do I pay on the website?</strong>
+              <p className="helper" style={{ marginTop: 6 }}>No. The website is for browsing and building your wishlist. Payment is arranged directly with us when you are ready.</p>
+            </div>
+            <div className="admin-row" style={{ flexDirection: 'column', alignItems: 'stretch', cursor: 'default' }}>
+              <strong>Can I request a piece that is not listed?</strong>
+              <p className="helper" style={{ marginTop: 6 }}>Yes. Message us with what you have in mind and we will do our best to source it for you.</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {whatsapp && (
         <section className="section section-soft">

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { BarChart3, CircleHelp, LayoutDashboard, LogOut, Menu, MessageSquare, Package, Settings, ShoppingBag, Sparkles, X } from 'lucide-react';
+import { BarChart3, CircleHelp, LayoutDashboard, LogOut, Menu, MessageSquare, Newspaper, Package, Settings, ShoppingBag, Sparkles, X } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getMe, logout } from '@/lib/api/auth';
 import { getCounts } from '@/lib/api/account';
@@ -17,6 +17,7 @@ const nav = [
   ['Messages', '/admin/contacts', MessageSquare],
   ['Discounts', '/admin/discounts', Sparkles],
   ['FAQs', '/admin/faqs', CircleHelp],
+  ['Journal', '/admin/blog', Newspaper],
   ['Settings', '/admin/settings', Settings],
 ] as const;
 

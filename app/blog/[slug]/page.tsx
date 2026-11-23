@@ -7,7 +7,7 @@ import { getChromeData } from '@/lib/chrome';
 import { BlogContent } from '@/components/public/blog-content';
 import { db } from '@/server/db';
 import { blogPosts } from '@/server/db/schema';
-import { and, eq, lte } from 'drizzle-orm';
+import { and, eq, lte, isNull, or } from 'drizzle-orm';
 import { getPublicUrl } from '@/server/storage/r2';
 
 export const revalidate = 60;
@@ -15,14 +15,14 @@ export const revalidate = 60;
 type Props = { params: { slug: string } };
 
 export async function generateMetadata({ params }: Props) {
-  const post = (await db.select().from(blogPosts).where(and(eq(blogPosts.slug, params.slug), eq(blogPosts.isPublished, true), lte(blogPosts.publishedAt, new Date()))).limit(1))[0];
+  const post = (await db.select().from(blogPosts).where(and(eq(blogPosts.slug, params.slug), eq(blogPosts.isPublished, true), or(isNull(blogPosts.publishedAt), lte(blogPosts.publishedAt, new Date())))).limit(1))[0];
   if (!post) return { title: 'Article not found' };
   return { title: `${post.title} — TrG Studio Journal`, description: post.excerpt };
 }
 
 export default async function BlogArticle({ params }: Props) {
   const { settings, categories, discountBar } = await getChromeData();
-  const post = (await db.select().from(blogPosts).where(and(eq(blogPosts.slug, params.slug), eq(blogPosts.isPublished, true), lte(blogPosts.publishedAt, new Date()))).limit(1))[0];
+  const post = (await db.select().from(blogPosts).where(and(eq(blogPosts.slug, params.slug), eq(blogPosts.isPublished, true), or(isNull(blogPosts.publishedAt), lte(blogPosts.publishedAt, new Date())))).limit(1))[0];
   if (!post) notFound();
 
   const coverUrl = post.coverImageKey ? getPublicUrl(post.coverImageKey) : null;

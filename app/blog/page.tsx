@@ -5,7 +5,7 @@ import { SiteChrome } from '@/components/public/site-chrome';
 import { getChromeData } from '@/lib/chrome';
 import { db } from '@/server/db';
 import { blogPosts } from '@/server/db/schema';
-import { and, desc, eq, lte } from 'drizzle-orm';
+import { and, desc, eq, lte, isNull, or } from 'drizzle-orm';
 import { getPublicUrl } from '@/server/storage/r2';
 
 export const revalidate = 60;
@@ -19,7 +19,7 @@ export default async function BlogPage() {
 
   let posts: Array<{ id: string; title: string; slug: string; excerpt: string; coverUrl: string | null; publishedAt: Date | null; readMinutes: number }> = [];
   try {
-    const rows = await db.select().from(blogPosts).where(and(eq(blogPosts.isPublished, true), lte(blogPosts.publishedAt, new Date()))).orderBy(desc(blogPosts.publishedAt));
+    const rows = await db.select().from(blogPosts).where(and(eq(blogPosts.isPublished, true), or(isNull(blogPosts.publishedAt), lte(blogPosts.publishedAt, new Date())))).orderBy(desc(blogPosts.publishedAt));
     posts = rows.map((post) => ({
       id: post.id,
       title: post.title,

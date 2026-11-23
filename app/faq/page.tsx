@@ -33,10 +33,22 @@ export default async function FAQPage() {
         {faqList.length > 0 ? (
           <FaqAccordion faqs={faqList} />
         ) : (
-          <div className="empty-state">
-            <h2>No questions yet</h2>
-            <p>Have a question? Reach out and we will help.</p>
-          </div>
+          <>
+            <div className="empty-state" style={{ marginBottom: 30 }}>
+              <h2>Common questions</h2>
+              <p>Here are the things customers ask us most.</p>
+            </div>
+            <FaqAccordion
+              faqs={[
+                { id: 'static-1', question: 'How do preorders work?', answer: 'Choose a preorder piece and send it to us with your interests. We confirm payment and delivery details with you directly, and your piece usually arrives within 4 to 8 weeks.' },
+                { id: 'static-2', question: 'Do I pay on the website?', answer: 'No. The website is for browsing and building your wishlist. There is no online payment — we arrange payment with you personally when you are ready to order.' },
+                { id: 'static-3', question: 'How will I know my order is confirmed?', answer: 'After you send your interests, we reach out by email or WhatsApp to confirm availability, payment, and delivery. You also get an email with your reference number right away.' },
+                { id: 'static-4', question: 'Can I request a piece that is not listed?', answer: 'Yes. Tell us what you are looking for — brand, colour, size, or budget — and we will do our best to source it for you.' },
+                { id: 'static-5', question: 'How do I care for my bags and shoes?', answer: 'Keep them away from direct sunlight and moisture, stuff bags with paper to hold their shape, and wipe gently with a soft dry cloth. Store each piece in its dust bag.' },
+                { id: 'static-6', question: 'Do you deliver outside your city?', answer: 'Yes, we deliver nationwide. Delivery costs and timelines are confirmed with you before payment.' },
+              ]}
+            />
+          </>
         )}
         <div className="editorial-band" style={{ marginTop: 54, borderRadius: 18 }}>
           <div className="editorial-content">

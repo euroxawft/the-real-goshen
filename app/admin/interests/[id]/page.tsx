@@ -50,14 +50,21 @@ export default function InterestDetail() {
     <AdminLayout title={interest.reference} eyebrow="Customer interest">
       <div className="admin-columns">
         <section className="admin-card">
-          <select value={interest.status} onChange={(e) => statusMutation.mutate(e.target.value)} style={{ marginBottom: 18 }}>
-            {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18, flexWrap: 'wrap' }}>
+            <span className={`status-chip ${interest.status === 'completed' ? 'green' : ''}`} style={{ fontSize: 13, padding: '6px 14px' }}>
+              Status: {interest.status.charAt(0).toUpperCase() + interest.status.slice(1)}
+            </span>
+            <select value={interest.status} onChange={(e) => statusMutation.mutate(e.target.value)} aria-label="Change status">
+              {STATUSES.map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+            </select>
+          </div>
           <h2 style={{ marginTop: 18 }}>{interest.customerName}</h2>
           <p className="helper">{interest.customerPhone} · {interest.customerEmail}</p>
           {interest.note && <div className="availability-card"><strong>Customer note</strong><span className="helper">{interest.note}</span></div>}
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 20 }}>
-            <button className="button button-dark" onClick={() => statusMutation.mutate('completed')}>Mark as done</button>
+            {interest.status !== 'completed' && (
+              <button className="button button-dark" onClick={() => statusMutation.mutate('completed')}>Mark as done</button>
+            )}
             <button className="button" onClick={() => resendMutation.mutate()} disabled={resendMutation.isPending}>Resend confirmation</button>
             <a href={`https://wa.me/${interest.customerPhone.replace(/[^0-9]/g, '')}`} className="button whatsapp-button">WhatsApp</a>
           </div>

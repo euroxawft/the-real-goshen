@@ -36,7 +36,7 @@ const createSchema = z.object({
 export async function GET(req: Request) {
   try {
     await requireAdmin();
-    const query = parseQuery(new URL(req.url).search, querySchema);
+    const query = parseQuery(req.url, querySchema);
     const { page, limit, offset } = parsePagination(query.page, query.limit, 100);
     const result = await listAdminProducts({ ...query, page, limit });
     return ok({ items: result.items, ...pageMeta(page, limit, result.total) });

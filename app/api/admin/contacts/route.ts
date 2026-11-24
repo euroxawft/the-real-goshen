@@ -13,7 +13,7 @@ const querySchema = z.object({ status: z.string().optional(), q: z.string().opti
 export async function GET(req: Request) {
   try {
     await requireAdmin();
-    const query = parseQuery(new URL(req.url).search, querySchema);
+    const query = parseQuery(req.url, querySchema);
     const { page, limit } = parsePagination(query.page, query.limit, 100);
     const result = await listAdminContacts({ ...query, page, limit });
     return ok({ items: result.items, ...pageMeta(page, limit, result.total) });

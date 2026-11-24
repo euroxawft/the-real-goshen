@@ -22,7 +22,7 @@ export default function ContactsPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-contacts', status, search, page],
     queryFn: () => listAdminContacts({ status: status || undefined, q: search || undefined, page: String(page), limit: String(PAGE_SIZE) }),
     retry: false,
@@ -50,6 +50,8 @@ export default function ContactsPage() {
       <section className="admin-card">
         {isLoading ? (
           <div className="skeleton" style={{ height: 200, borderRadius: 12 }} />
+        ) : isError ? (
+          <div className="error-state"><h2>Could not load messages</h2><p>Something went wrong while fetching. Check your connection and try again.</p><button className="retry-button" onClick={() => refetch()}>Try again</button></div>
         ) : data?.items.length ? (
           data.items.map((contact) => (
             <Link href={`/admin/contacts/${contact.id}`} className="admin-row" key={contact.id}>

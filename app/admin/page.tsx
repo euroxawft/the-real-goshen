@@ -17,9 +17,10 @@ export default function AdminDashboard() {
       ) : data ? (
         <>
           <div className="admin-grid">
-            <div className="admin-stat"><span>Interests today</span><strong>{data.stats.interestsToday}</strong></div>
-            <div className="admin-stat"><span>Pending interests</span><strong>{data.stats.publishedProducts}</strong><span className="helper">Published products</span></div>
-            <div className="admin-stat"><span>Messages today</span><strong>{data.stats.contactsToday}</strong></div>
+            <div className="admin-stat"><span>Interests today</span><strong>{data.stats.interestsToday}</strong><span className="helper">{data.stats.totalInterests} all time</span></div>
+            <div className="admin-stat"><span>Published products</span><strong>{data.stats.publishedProducts}</strong><span className="helper">{data.stats.totalProducts} total</span></div>
+            <div className="admin-stat"><span>Messages today</span><strong>{data.stats.contactsToday}</strong><span className="helper">{data.stats.totalContacts} all time</span></div>
+            <div className="admin-stat"><span>Journal stories</span><strong>{data.stats.publishedBlogs}</strong><span className="helper">{data.stats.totalBlogs} total</span></div>
             <div className="admin-stat"><span>Active discounts</span><strong>{data.stats.activeDiscounts}</strong></div>
           </div>
           <div className="admin-columns">

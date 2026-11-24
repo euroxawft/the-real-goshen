@@ -23,7 +23,7 @@ export default function AdminProducts() {
   const [editProduct, setEditProduct] = useState<AdminProduct | null>(null);
   const [imagesProduct, setImagesProduct] = useState<AdminProduct | null>(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-products', search, page],
     queryFn: () => listAdminProducts({ q: search, page, limit: PAGE_SIZE }),
     retry: false,
@@ -82,6 +82,8 @@ export default function AdminProducts() {
       <section className="admin-card">
         {isLoading ? (
           <div className="skeleton" style={{ height: 300, borderRadius: 12 }} />
+        ) : isError ? (
+          <div className="error-state"><h2>Could not load products</h2><p>Something went wrong while fetching. Check your connection and try again.</p><button className="retry-button" onClick={() => refetch()}>Try again</button></div>
         ) : data?.items.length ? (
           data.items.map((product) => (
             <div className="admin-row" key={product.id}>

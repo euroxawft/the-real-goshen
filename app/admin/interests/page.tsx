@@ -22,7 +22,7 @@ export default function InterestsPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-interests', tab, search, page],
     queryFn: () => listAdminInterests({ tab, q: search, page: String(page), limit: String(PAGE_SIZE) }),
     retry: false,
@@ -50,6 +50,8 @@ export default function InterestsPage() {
       <section className="admin-card">
         {isLoading ? (
           <div className="skeleton" style={{ height: 200, borderRadius: 12 }} />
+        ) : isError ? (
+          <div className="error-state"><h2>Could not load interests</h2><p>Something went wrong while fetching. Check your connection and try again.</p><button className="retry-button" onClick={() => refetch()}>Try again</button></div>
         ) : data?.items.length ? (
           data.items.map((interest) => (
             <Link href={`/admin/interests/${interest.id}`} className="admin-row" key={interest.id}>

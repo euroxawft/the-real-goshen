@@ -25,7 +25,7 @@ export async function revokeSession(id: string) {
 
 export async function getDashboard() {
   return apiFetch<{
-    stats: { interestsToday: number; contactsToday: number; totalProducts: number; publishedProducts: number; activeDiscounts: number };
+    stats: { interestsToday: number; contactsToday: number; totalProducts: number; publishedProducts: number; activeDiscounts: number; totalInterests: number; totalContacts: number; totalBlogs: number; publishedBlogs: number };
     todayInterests: Array<{ id: string; reference: string; customerName: string; status: string; totalEstimate: number; createdAt: Date }>;
     chart: Array<{ date: string; count: number }>;
     needsAttention: Array<{ id: string; reference: string; customerName: string; status: string; reminderCount: number; lastRemindedAt: Date | null }>;

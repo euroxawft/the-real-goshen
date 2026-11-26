@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 const schema = z.object({
   name: z.string().trim().min(2).max(120),
   scope: z.enum(['all', 'product']),
-  productId: z.string().uuid().nullable().optional(),
+  productIds: z.array(z.string().uuid()).optional(),
   percentage: z.number().int().min(1).max(90),
   startsAt: z.string(),
   endsAt: z.string(),

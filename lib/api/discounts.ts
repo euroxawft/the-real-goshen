@@ -4,13 +4,14 @@ export type DiscountEvent = {
   id: string;
   name: string;
   scope: 'all' | 'product';
-  productId: string | null;
   percentage: number;
   startsAt: Date;
   endsAt: Date;
   isActive: boolean;
   state?: string;
-  product?: { id: string; name: string; slug?: string } | null;
+  product?: { id: string; name: string } | null;
+  products: { id: string; name: string }[];
+  productCount: number;
   createdAt: Date;
 };
 
@@ -18,12 +19,8 @@ export async function listAdminDiscounts() {
   return apiFetch<{ items: DiscountEvent[] }>('/api/admin/discounts');
 }
 
-export async function createDiscount(data: { name: string; scope: 'all' | 'product'; productId?: string | null; percentage: number; startsAt: string; endsAt: string; isActive?: boolean }) {
+export async function createDiscount(data: { name: string; scope: 'all' | 'product'; productIds?: string[]; percentage: number; startsAt: string; endsAt: string; isActive?: boolean }) {
   return apiFetch<DiscountEvent>('/api/admin/discounts', { method: 'POST', body: JSON.stringify(data) });
-}
-
-export async function updateDiscount(id: string, data: Record<string, unknown>) {
-  return apiFetch<DiscountEvent>(`/api/admin/discounts/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
 }
 
 export async function toggleDiscount(id: string) {

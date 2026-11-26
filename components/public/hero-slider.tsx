@@ -46,15 +46,23 @@ export function HeroSlider() {
         >
           <div className="hero-slide-bg">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={slide.image} alt="" style={{ objectFit: 'cover', opacity: 0.3 }} />
+            <img src={slide.image} alt="" aria-hidden />
           </div>
           <div className="container hero-slide-content">
-            <span className="eyebrow eyebrow-light">{slide.eyebrow}</span>
-            <h1>{slide.title}</h1>
-            <p>{slide.text}</p>
-            <Link href={slide.cta.href} className="button button-gold" tabIndex={i === index ? 0 : -1}>
-              {slide.cta.label} <ArrowRight size={16} />
-            </Link>
+            <div className="hero-slide-inner">
+              <div className="hero-slide-copy">
+                <span className="eyebrow eyebrow-light">{slide.eyebrow}</span>
+                <h1>{slide.title}</h1>
+                <p>{slide.text}</p>
+                <Link href={slide.cta.href} className="button button-gold" tabIndex={i === index ? 0 : -1}>
+                  {slide.cta.label} <ArrowRight size={16} />
+                </Link>
+              </div>
+              <div className="hero-slide-art" aria-hidden={i !== index}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={slide.image} alt="" />
+              </div>
+            </div>
           </div>
         </div>
       ))}

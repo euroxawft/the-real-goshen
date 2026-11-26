@@ -33,6 +33,10 @@ export const discountEvents = pgTable('discount_events', {
   id: id(), name: varchar('name', { length: 120 }).notNull(), scope: discountScopeEnum('scope').notNull(), productId: uuid('product_id').references(() => products.id, { onDelete: 'cascade' }), percentage: integer('percentage').notNull(), startsAt: timestamp('starts_at', { withTimezone: true }).notNull(), endsAt: timestamp('ends_at', { withTimezone: true }).notNull(), isActive: boolean('is_active').notNull().default(true), createdAt: createdAt(), updatedAt: updatedAt(),
 }, (table) => [index('discount_window_idx').on(table.startsAt, table.endsAt), index('discount_product_idx').on(table.productId), check('discount_percentage_range', sql`${table.percentage} between 1 and 90`), check('discount_window_valid', sql`${table.endsAt} > ${table.startsAt}`), check('discount_scope_product', sql`(${table.scope} = 'all' and ${table.productId} is null) or (${table.scope} = 'product' and ${table.productId} is not null)`)]);
 
+export const discountProducts = pgTable('discount_products', {
+  id: id(), discountEventId: uuid('discount_event_id').notNull().references(() => discountEvents.id, { onDelete: 'cascade' }), productId: uuid('product_id').notNull().references(() => products.id, { onDelete: 'cascade' }), createdAt: createdAt(),
+}, (table) => [uniqueIndex('discount_products_unique').on(table.discountEventId, table.productId), index('discount_products_event_idx').on(table.discountEventId), index('discount_products_product_idx').on(table.productId)]);
+
 export const interests = pgTable('interests', {
   id: id(), reference: varchar('reference', { length: 20 }).notNull().unique(), customerName: varchar('customer_name', { length: 150 }).notNull(), customerEmail: varchar('customer_email', { length: 255 }).notNull(), customerPhone: varchar('customer_phone', { length: 40 }).notNull(), note: text('note'), status: interestStatusEnum('status').notNull().default('new'), totalEstimate: integer('total_estimate').notNull(), emailSentToCustomer: boolean('email_sent_to_customer').notNull().default(false), emailSentToStore: boolean('email_sent_to_store').notNull().default(false), lastRemindedAt: timestamp('last_reminded_at', { withTimezone: true }), reminderCount: integer('reminder_count').notNull().default(0), completedAt: timestamp('completed_at', { withTimezone: true }), createdAt: createdAt(), updatedAt: updatedAt(),
 }, (table) => [index('interests_status_created_idx').on(table.status, table.createdAt), index('interests_email_idx').on(table.customerEmail), index('interests_created_idx').on(table.createdAt)]);
@@ -73,7 +77,8 @@ export const adminsRelations = relations(admins, ({ many }) => ({ refreshTokens:
 export const adminRefreshTokensRelations = relations(adminRefreshTokens, ({ one }) => ({ admin: one(admins, { fields: [adminRefreshTokens.adminId], references: [admins.id] }) }));
 export const categoriesRelations = relations(categories, ({ many }) => ({ products: many(products) }));
 export const productsRelations = relations(products, ({ one, many }) => ({ category: one(categories, { fields: [products.categoryId], references: [categories.id] }), discountEvents: many(discountEvents), interestItems: many(interestItems) }));
-export const discountEventsRelations = relations(discountEvents, ({ one }) => ({ product: one(products, { fields: [discountEvents.productId], references: [products.id] }) }));
+export const discountEventsRelations = relations(discountEvents, ({ one, many }) => ({ product: one(products, { fields: [discountEvents.productId], references: [products.id] }), discountProducts: many(discountProducts) }));
+export const discountProductsRelations = relations(discountProducts, ({ one }) => ({ discountEvent: one(discountEvents, { fields: [discountProducts.discountEventId], references: [discountEvents.id] }), product: one(products, { fields: [discountProducts.productId], references: [products.id] }) }));
 export const interestsRelations = relations(interests, ({ many }) => ({ items: many(interestItems), reminders: many(interestReminders) }));
 export const interestItemsRelations = relations(interestItems, ({ one }) => ({ interest: one(interests, { fields: [interestItems.interestId], references: [interests.id] }), product: one(products, { fields: [interestItems.productId], references: [products.id] }) }));
 export const interestRemindersRelations = relations(interestReminders, ({ one }) => ({ interest: one(interests, { fields: [interestReminders.interestId], references: [interests.id] }) }));
@@ -85,6 +90,7 @@ export type Category = typeof categories.$inferSelect;
 export type Product = typeof products.$inferSelect;
 export type NewProduct = typeof products.$inferInsert;
 export type DiscountEvent = typeof discountEvents.$inferSelect;
+export type DiscountProduct = typeof discountProducts.$inferSelect;
 export type Interest = typeof interests.$inferSelect;
 export type InterestItem = typeof interestItems.$inferSelect;
 export type InterestReminder = typeof interestReminders.$inferSelect;
